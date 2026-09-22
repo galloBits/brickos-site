@@ -10,7 +10,8 @@
 // checkout route can look them up. Safe to re-run — it skips anything that
 // already has a stripe_price_id set in Supabase.
 
-import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local" });
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import {
