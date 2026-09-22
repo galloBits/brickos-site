@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { getStripe } from "@/lib/stripe";
-import { createClient } from "@/lib/supabase/server";
-import { createServiceRoleClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { getPaymentProvider, type PlanType } from "@/lib/payments";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -14,26 +13,26 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { planType } = body as { planType: "agent" | "bundle" | "full" };
+  const { planType } = body as { planType: PlanType };
 
   const admin = createServiceRoleClient();
   const origin = request.headers.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL;
 
-  let lineItems: { price: string; quantity: number }[] = [];
-  let metadata: Record<string, string> = { supabaseUserId: user.id, planType };
+  let priceRefs: string[] = [];
+  const metadata: Record<string, string> = { supabaseUserId: user.id, planType };
 
   if (planType === "full") {
     if (!process.env.STRIPE_PRICE_FULL_OS) {
       return NextResponse.json({ error: "Full OS price not configured" }, { status: 500 });
     }
-    lineItems = [{ price: process.env.STRIPE_PRICE_FULL_OS, quantity: 1 }];
+    priceRefs = [process.env.STRIPE_PRICE_FULL_OS];
   } else if (planType === "bundle") {
     const { bundleId } = body as { bundleId: string };
     const { data: bundle } = await admin.from("bundles").select("stripe_price_id").eq("id", bundleId).single();
     if (!bundle?.stripe_price_id) {
       return NextResponse.json({ error: "Bundle not found or not seeded in Stripe yet" }, { status: 400 });
     }
-    lineItems = [{ price: bundle.stripe_price_id, quantity: 1 }];
+    priceRefs = [bundle.stripe_price_id];
     metadata.bundleId = bundleId;
   } else if (planType === "agent") {
     const { agentSlugs } = body as { agentSlugs: string[] };
@@ -45,25 +44,25 @@ export async function POST(request: Request) {
     if (missing.length) {
       return NextResponse.json({ error: `Not seeded in Stripe yet: ${missing.join(", ")}` }, { status: 400 });
     }
-    lineItems = (agents ?? []).map((a) => ({ price: a.stripe_price_id!, quantity: 1 }));
+    priceRefs = (agents ?? []).map((a) => a.stripe_price_id!);
     metadata.agentSlugs = agentSlugs.join(",");
   } else {
     return NextResponse.json({ error: "Invalid planType" }, { status: 400 });
   }
 
-  // Reuse an existing Stripe customer for this user if we have one.
+  // Reuse an existing customer id for this user/provider if we have one.
   const { data: profile } = await admin.from("profiles").select("stripe_customer_id").eq("id", user.id).single();
 
-  const session = await getStripe().checkout.sessions.create({
-    mode: "subscription",
-    line_items: lineItems,
-    customer: profile?.stripe_customer_id ?? undefined,
-    customer_email: profile?.stripe_customer_id ? undefined : user.email,
-    success_url: `${origin}/dashboard?checkout=success`,
-    cancel_url: `${origin}/pricing?checkout=cancelled`,
+  const { redirectUrl } = await getPaymentProvider().createCheckoutSession({
+    userId: user.id,
+    userEmail: user.email!,
+    existingCustomerId: profile?.stripe_customer_id,
+    planType,
+    priceRefs,
+    successUrl: `${origin}/dashboard?checkout=success`,
+    cancelUrl: `${origin}/pricing?checkout=cancelled`,
     metadata,
-    subscription_data: { metadata },
   });
 
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json({ url: redirectUrl });
 }
