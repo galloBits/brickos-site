@@ -40,7 +40,8 @@ export async function GET(request: Request) {
 
     const daysLeft = Math.ceil((new Date(cycle.cycle_end).getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
     const { subject, html } = renewalReminderEmail(daysLeft);
-    await sendEmail(profile.email, subject, html);
+    const result = await sendEmail(profile.email, subject, html);
+    if (!result.ok) continue;
     await supabase.from("renewal_cycles").update({ reminder_sent_at: now.toISOString() }).eq("id", cycle.id);
     sent++;
   }

@@ -10,6 +10,16 @@ import { MaoEngine } from "@/components/agents/mao-engine";
 import { LoiDrafter } from "@/components/agents/loi-drafter";
 import { OfferStackBuilder } from "@/components/agents/offer-stack-builder";
 import { RiskFlagAi } from "@/components/agents/risk-flag-ai";
+import { VacancyPricer } from "@/components/agents/vacancy-pricer";
+import { LeaseGenerator } from "@/components/agents/lease-generator";
+import { RentRollReconciler } from "@/components/agents/rent-roll-reconciler";
+import { UtilityAuditor } from "@/components/agents/utility-auditor";
+import { MarketSurveyor } from "@/components/agents/market-surveyor";
+import { LeaseRenewalClock } from "@/components/agents/lease-renewal-clock";
+import { WorkOrderRouter } from "@/components/agents/work-order-router";
+import { VendorDispatcher } from "@/components/agents/vendor-dispatcher";
+import { InspectionLogger } from "@/components/agents/inspection-logger";
+import { TurnoverCoordinator } from "@/components/agents/turnover-coordinator";
 
 const AGENT_TOOLS: Record<string, React.ComponentType> = {
   "comp-cruncher": CompCruncher,
@@ -19,6 +29,16 @@ const AGENT_TOOLS: Record<string, React.ComponentType> = {
   "loi-drafter": LoiDrafter,
   "offer-stack-builder": OfferStackBuilder,
   "risk-flag-ai": RiskFlagAi,
+  "vacancy-pricer": VacancyPricer,
+  "lease-generator": LeaseGenerator,
+  "rent-roll-reconciler": RentRollReconciler,
+  "utility-auditor": UtilityAuditor,
+  "market-surveyor": MarketSurveyor,
+  "lease-renewal-clock": LeaseRenewalClock,
+  "work-order-router": WorkOrderRouter,
+  "vendor-dispatcher": VendorDispatcher,
+  "inspection-logger": InspectionLogger,
+  "turnover-coordinator": TurnoverCoordinator,
 };
 
 // Statically generates all 58 /workflows/<agent-slug> routes at build time.

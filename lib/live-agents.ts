@@ -9,6 +9,16 @@ export const LIVE_AGENT_SLUGS = new Set([
   "loi-drafter",
   "offer-stack-builder",
   "risk-flag-ai",
+  "vacancy-pricer",
+  "lease-generator",
+  "rent-roll-reconciler",
+  "utility-auditor",
+  "market-surveyor",
+  "lease-renewal-clock",
+  "work-order-router",
+  "vendor-dispatcher",
+  "inspection-logger",
+  "turnover-coordinator",
 ]);
 
 export function isAgentLive(slug: string): boolean {

@@ -6,13 +6,34 @@ let _resend: Resend | undefined;
 
 const FROM = process.env.EMAIL_FROM ?? "BrickOS <hello@thecoopdao.xyz>";
 
-export async function sendEmail(to: string, subject: string, html: string) {
+export type SendResult = { ok: boolean; error?: string };
+
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+export async function sendEmail(
+  to: string,
+  subject: string,
+  html: string,
+  opts?: { replyTo?: string },
+): Promise<SendResult> {
   if (!process.env.RESEND_API_KEY) {
     console.warn(`RESEND_API_KEY not set — skipping email to ${to}: ${subject}`);
-    return;
+    return { ok: false, error: "Email isn't configured yet (RESEND_API_KEY is not set)." };
   }
-  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
-  await _resend.emails.send({ from: FROM, to, subject, html });
+  try {
+    if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+    const { error } = await _resend.emails.send({ from: FROM, to, subject, html, replyTo: opts?.replyTo });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Email send failed" };
+  }
 }
 
 export function renewalReminderEmail(daysLeft: number) {

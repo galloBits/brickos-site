@@ -5,6 +5,8 @@ import Anthropic from "@anthropic-ai/sdk";
 // ANTHROPIC_API_KEY isn't set yet.
 let _anthropic: Anthropic | undefined;
 
+export const AGENT_MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-5";
+
 export function getAnthropic(): Anthropic {
   if (!_anthropic) {
     _anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });

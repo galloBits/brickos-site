@@ -46,7 +46,8 @@ export async function GET(request: Request) {
       if (existing) continue;
 
       const { subject, html } = followUpEmail(step);
-      await sendEmail(profile.email, subject, html);
+      const result = await sendEmail(profile.email, subject, html);
+      if (!result.ok) continue;
       await supabase.from("follow_up_log").insert({ user_id: profile.id, step });
       sent++;
     }
