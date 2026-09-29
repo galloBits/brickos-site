@@ -1,7 +1,25 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { AGENTS, getAgent, getBundleForAgent } from "@/lib/catalog";
-import { createClient } from "@/lib/supabase/server";
+import { getEntitlement } from "@/lib/entitlement";
+import { isAgentLive } from "@/lib/live-agents";
+import { CompCruncher } from "@/components/agents/comp-cruncher";
+import { RentEstimator } from "@/components/agents/rent-estimator";
+import { RehabCalculator } from "@/components/agents/rehab-calculator";
+import { MaoEngine } from "@/components/agents/mao-engine";
+import { LoiDrafter } from "@/components/agents/loi-drafter";
+import { OfferStackBuilder } from "@/components/agents/offer-stack-builder";
+import { RiskFlagAi } from "@/components/agents/risk-flag-ai";
+
+const AGENT_TOOLS: Record<string, React.ComponentType> = {
+  "comp-cruncher": CompCruncher,
+  "rent-estimator": RentEstimator,
+  "rehab-calculator": RehabCalculator,
+  "mao-engine": MaoEngine,
+  "loi-drafter": LoiDrafter,
+  "offer-stack-builder": OfferStackBuilder,
+  "risk-flag-ai": RiskFlagAi,
+};
 
 // Statically generates all 58 /workflows/<agent-slug> routes at build time.
 export function generateStaticParams() {
@@ -18,33 +36,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-async function getEntitlement(agentSlug: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { signedIn: false, entitled: false };
-
-  const { data: fullOs } = await supabase
-    .from("subscriptions")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("plan_type", "full")
-    .eq("status", "active")
-    .maybeSingle();
-  if (fullOs) return { signedIn: true, entitled: true };
-
-  // RLS on subscription_agents already scopes rows to the signed-in user.
-  const { data: direct } = await supabase
-    .from("subscription_agents")
-    .select("subscription_id, subscriptions!inner(status)")
-    .eq("agent_slug", agentSlug)
-    .eq("subscriptions.status", "active")
-    .maybeSingle();
-
-  return { signedIn: true, entitled: !!direct };
-}
-
 export default async function WorkflowPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const agent = getAgent(slug);
@@ -52,6 +43,8 @@ export default async function WorkflowPage({ params }: { params: Promise<{ slug:
 
   const bundle = getBundleForAgent(agent.slug);
   const { signedIn, entitled } = await getEntitlement(agent.slug);
+  const live = isAgentLive(agent.slug);
+  const Tool = AGENT_TOOLS[agent.slug];
 
   return (
     <main className="mx-auto max-w-[860px] px-6 md:px-10 py-16">
@@ -60,15 +53,18 @@ export default async function WorkflowPage({ params }: { params: Promise<{ slug:
       </div>
       <h1 className="font-serif text-4xl md:text-5xl mb-6">{agent.title}</h1>
 
-      {entitled ? (
-        <div className="border border-accent/30 bg-accent/5 p-6">
-          <p className="text-accent font-mono text-sm mb-2">✓ Active on your account</p>
-          <p className="text-white/70 text-sm">
-            This agent runs automatically per its configured schedule. Manage it from your{" "}
+      {entitled && live && Tool ? (
+        <Tool />
+      ) : entitled ? (
+        <div className="border border-white/10 bg-white/[0.02] p-6">
+          <p className="font-mono text-sm mb-2 text-white/70">🛠 In development</p>
+          <p className="text-white/60 text-sm">
+            Your subscription already covers this agent — it'll activate automatically here as soon as it's built,
+            no action needed. Check your{" "}
             <Link href="/dashboard" className="text-accent underline">
               dashboard
-            </Link>
-            .
+            </Link>{" "}
+            for what's live today.
           </p>
         </div>
       ) : (

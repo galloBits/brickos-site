@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AGENTS, getAgent } from "@/lib/catalog";
+import { isAgentLive } from "@/lib/live-agents";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -61,19 +62,27 @@ export default async function DashboardPage() {
         <section>
           <h2 className="font-mono text-xs tracking-widest opacity-60 mb-4">YOUR AGENTS</h2>
           <div className="grid md:grid-cols-3 gap-3">
-            {entitledSlugs.map((slug) => {
-              const agent = getAgent(slug);
-              if (!agent) return null;
-              return (
-                <Link
-                  key={slug}
-                  href={`/workflows/${slug}`}
-                  className="border border-white/10 p-4 bg-white/[0.02] hover:border-accent/40 transition text-sm"
-                >
-                  {agent.title}
-                </Link>
-              );
-            })}
+            {[...entitledSlugs]
+              .sort((a, b) => Number(isAgentLive(b)) - Number(isAgentLive(a)))
+              .map((slug) => {
+                const agent = getAgent(slug);
+                if (!agent) return null;
+                const live = isAgentLive(slug);
+                return (
+                  <Link
+                    key={slug}
+                    href={`/workflows/${slug}`}
+                    className="flex items-center justify-between border border-white/10 p-4 bg-white/[0.02] hover:border-accent/40 transition text-sm"
+                  >
+                    <span>{agent.title}</span>
+                    {live ? (
+                      <span className="font-mono text-[9px] text-accent">LIVE</span>
+                    ) : (
+                      <span className="font-mono text-[9px] text-white/30">SOON</span>
+                    )}
+                  </Link>
+                );
+              })}
           </div>
         </section>
       )}

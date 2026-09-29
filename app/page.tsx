@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BUNDLES, TOTAL_AGENT_COUNT, AGENT_MONTHLY_PRICE_CENTS, FULL_OS_MONTHLY_PRICE_CENTS } from "@/lib/catalog";
 import { createClient } from "@/lib/supabase/server";
+import { isAgentLive } from "@/lib/live-agents";
 
 function dollars(cents: number) {
   return `$${(cents / 100).toLocaleString()}`;
@@ -57,9 +58,10 @@ export default async function HomePage() {
                   <Link
                     key={slug}
                     href={`/workflows/${slug}`}
-                    className="block font-mono text-[11px] text-white/55 hover:text-accent transition"
+                    className="flex items-center justify-between font-mono text-[11px] text-white/55 hover:text-accent transition"
                   >
-                    › {slug.replace(/-/g, " ")}
+                    <span>› {slug.replace(/-/g, " ")}</span>
+                    {isAgentLive(slug) && <span className="text-[9px] text-accent/80">LIVE</span>}
                   </Link>
                 ))}
                 {bundle.agents.length > 5 && (
