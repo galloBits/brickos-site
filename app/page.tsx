@@ -1,11 +1,17 @@
 import Link from "next/link";
 import { BUNDLES, TOTAL_AGENT_COUNT, AGENT_MONTHLY_PRICE_CENTS, FULL_OS_MONTHLY_PRICE_CENTS } from "@/lib/catalog";
+import { createClient } from "@/lib/supabase/server";
 
 function dollars(cents: number) {
   return `$${(cents / 100).toLocaleString()}`;
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <main>
       <section className="mx-auto max-w-[1280px] px-6 md:px-10 pt-16 md:pt-28 pb-20 border-b border-white/[0.06]">
@@ -22,10 +28,10 @@ export default function HomePage() {
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
-            href="/signup"
+            href={user ? "/dashboard" : "/signup"}
             className="px-7 py-3.5 text-black font-bold font-mono text-xs tracking-widest bg-accent hover:brightness-110 transition"
           >
-            INSTALL IN 3 MINS →
+            {user ? "GO TO DASHBOARD →" : "INSTALL IN 3 MINS →"}
           </Link>
           <Link
             href="#agents"
@@ -48,9 +54,13 @@ export default function HomePage() {
               <p className="font-mono text-[11px] mt-2 text-accent/80">{bundle.description}</p>
               <div className="mt-5 space-y-1.5">
                 {bundle.agents.slice(0, 5).map((slug) => (
-                  <div key={slug} className="font-mono text-[11px] text-white/55">
+                  <Link
+                    key={slug}
+                    href={`/workflows/${slug}`}
+                    className="block font-mono text-[11px] text-white/55 hover:text-accent transition"
+                  >
                     › {slug.replace(/-/g, " ")}
-                  </div>
+                  </Link>
                 ))}
                 {bundle.agents.length > 5 && (
                   <div className="font-mono text-[11px] text-white/40">+ {bundle.agents.length - 5} more</div>

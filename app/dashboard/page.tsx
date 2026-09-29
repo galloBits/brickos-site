@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getAgent } from "@/lib/catalog";
+import { AGENTS, getAgent } from "@/lib/catalog";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -24,7 +24,7 @@ export default async function DashboardPage() {
 
   const hasFullOs = (subscriptions ?? []).some((s) => s.plan_type === "full" && s.status === "active");
   const entitledSlugs = hasFullOs
-    ? []
+    ? AGENTS.map((a) => a.slug)
     : Array.from(new Set((subAgentRows ?? []).map((r) => r.agent_slug)));
 
   return (
@@ -61,21 +61,19 @@ export default async function DashboardPage() {
         <section>
           <h2 className="font-mono text-xs tracking-widest opacity-60 mb-4">YOUR AGENTS</h2>
           <div className="grid md:grid-cols-3 gap-3">
-            {hasFullOs
-              ? "All 58 agents included with Full OS."
-              : entitledSlugs.map((slug) => {
-                  const agent = getAgent(slug);
-                  if (!agent) return null;
-                  return (
-                    <Link
-                      key={slug}
-                      href={`/workflows/${slug}`}
-                      className="border border-white/10 p-4 bg-white/[0.02] hover:border-accent/40 transition text-sm"
-                    >
-                      {agent.title}
-                    </Link>
-                  );
-                })}
+            {entitledSlugs.map((slug) => {
+              const agent = getAgent(slug);
+              if (!agent) return null;
+              return (
+                <Link
+                  key={slug}
+                  href={`/workflows/${slug}`}
+                  className="border border-white/10 p-4 bg-white/[0.02] hover:border-accent/40 transition text-sm"
+                >
+                  {agent.title}
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}
