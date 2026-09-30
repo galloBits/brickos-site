@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BUNDLES, TOTAL_AGENT_COUNT, AGENT_MONTHLY_PRICE_CENTS, FULL_OS_MONTHLY_PRICE_CENTS } from "@/lib/catalog";
 import { createClient } from "@/lib/supabase/server";
-import { isAgentLive } from "@/lib/live-agents";
+import { isAgentLive, LIVE_AGENT_SLUGS } from "@/lib/live-agents";
 
 function dollars(cents: number) {
   return `$${(cents / 100).toLocaleString()}`;
@@ -17,8 +17,8 @@ export default async function HomePage() {
     <main>
       <section className="mx-auto max-w-[1280px] px-6 md:px-10 pt-16 md:pt-28 pb-20 border-b border-white/[0.06]">
         <div className="inline-flex items-center gap-2 border border-accent/30 bg-accent/10 px-3 py-1 font-mono text-[10px] tracking-widest text-accent">
-          <span className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse" /> LIVE • {TOTAL_AGENT_COUNT} AGENTS
-          DEPLOYED
+          <span className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse" /> {LIVE_AGENT_SLUGS.size} OF{" "}
+          {TOTAL_AGENT_COUNT} AGENTS LIVE
         </div>
         <h1 className="font-serif text-[38px] md:text-[64px] leading-[0.95] tracking-tight mt-6">
           We built BrickOS because real estate operators were drowning in busywork.

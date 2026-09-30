@@ -20,8 +20,38 @@ import { WorkOrderRouter } from "@/components/agents/work-order-router";
 import { VendorDispatcher } from "@/components/agents/vendor-dispatcher";
 import { InspectionLogger } from "@/components/agents/inspection-logger";
 import { TurnoverCoordinator } from "@/components/agents/turnover-coordinator";
+import { DistributionCalc } from "@/components/agents/distribution-calc";
+import { WaterfallModeler } from "@/components/agents/waterfall-modeler";
+import { CapitalCallBot } from "@/components/agents/capital-call-bot";
+import { ValuationEngine } from "@/components/agents/valuation-engine";
+import { Exchange1031 } from "@/components/agents/exchange-1031";
+import { FollowUpClock } from "@/components/agents/follow-up-clock";
+import { FundraisingTracker } from "@/components/agents/fundraising-tracker";
+import {
+  AbsenteeMapper,
+  LlcUnmasker,
+  PortfolioStalker,
+  PreForeclosureRadar,
+  TaxDelinquentHunter,
+} from "@/components/agents/sourcing-agents";
+import { ClaudeAgent } from "@/components/agents/claude-agent";
+import { ChecklistAgent } from "@/components/agents/checklist-agent";
+import { clientPropsFor } from "@/lib/claude-agents";
+import { CHECKLIST_TEMPLATES } from "@/lib/checklist-templates";
 
 const AGENT_TOOLS: Record<string, React.ComponentType> = {
+  "distribution-calc": DistributionCalc,
+  "waterfall-modeler": WaterfallModeler,
+  "capital-call-bot": CapitalCallBot,
+  "valuation-engine": ValuationEngine,
+  "1031-coordinator": Exchange1031,
+  "follow-up-clock": FollowUpClock,
+  "fundraising-tracker": FundraisingTracker,
+  "absentee-mapper": AbsenteeMapper,
+  "tax-delinquent-hunter": TaxDelinquentHunter,
+  "portfolio-stalker": PortfolioStalker,
+  "pre-foreclosure-radar": PreForeclosureRadar,
+  "llc-unmasker": LlcUnmasker,
   "comp-cruncher": CompCruncher,
   "rent-estimator": RentEstimator,
   "rehab-calculator": RehabCalculator,
@@ -64,7 +94,15 @@ export default async function WorkflowPage({ params }: { params: Promise<{ slug:
   const bundle = getBundleForAgent(agent.slug);
   const { signedIn, entitled } = await getEntitlement(agent.slug);
   const live = isAgentLive(agent.slug);
-  const Tool = AGENT_TOOLS[agent.slug];
+  const Custom = AGENT_TOOLS[agent.slug];
+  const claudeProps = clientPropsFor(agent.slug);
+  const tool = Custom ? (
+    <Custom />
+  ) : claudeProps ? (
+    <ClaudeAgent slug={agent.slug} {...claudeProps} />
+  ) : CHECKLIST_TEMPLATES[agent.slug] ? (
+    <ChecklistAgent slug={agent.slug} />
+  ) : null;
 
   return (
     <main className="mx-auto max-w-[860px] px-6 md:px-10 py-16">
@@ -73,8 +111,8 @@ export default async function WorkflowPage({ params }: { params: Promise<{ slug:
       </div>
       <h1 className="font-serif text-4xl md:text-5xl mb-6">{agent.title}</h1>
 
-      {entitled && live && Tool ? (
-        <Tool />
+      {entitled && live && tool ? (
+        tool
       ) : entitled ? (
         <div className="border border-white/10 bg-white/[0.02] p-6">
           <p className="font-mono text-sm mb-2 text-white/70">🛠 In development</p>

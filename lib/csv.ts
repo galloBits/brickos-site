@@ -62,6 +62,28 @@ export function toNumber(value: string | undefined): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+function csvCell(value: string | number): string {
+  if (typeof value === "number") return Number.isFinite(value) ? String(value) : "";
+  const s = value ?? "";
+  // Prefix formula-leading cells so spreadsheet apps don't execute them.
+  const safe = /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+  return /[",\n\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
+}
+
+export function toCsv(headers: string[], rows: (string | number)[][]): string {
+  return [headers, ...rows].map((r) => r.map(csvCell).join(",")).join("\n");
+}
+
+export function downloadCsv(filename: string, headers: string[], rows: (string | number)[][]) {
+  const blob = new Blob([toCsv(headers, rows)], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function median(values: number[]): number {
   if (!values.length) return 0;
   const sorted = [...values].sort((a, b) => a - b);
