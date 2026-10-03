@@ -1,8 +1,17 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { getPaymentProvider, type PlanType } from "@/lib/payments";
+import { packList } from "@/lib/payments/metadata";
 
 export async function POST(request: Request) {
+  // Safety valve: with a live Stripe key, real cards are charged. Refuse to
+  // take payments in live mode until it's been explicitly switched on
+  // (STRIPE_LIVE_ENABLED=true) after the live webhook is verified, so a
+  // customer can never be charged without the webhook that grants access.
+  if (process.env.STRIPE_SECRET_KEY?.startsWith("sk_live_") && process.env.STRIPE_LIVE_ENABLED !== "true") {
+    return NextResponse.json({ error: "Payments aren't open yet. Please check back soon." }, { status: 503 });
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -35,8 +44,9 @@ export async function POST(request: Request) {
     priceRefs = [bundle.stripe_price_id];
     metadata.bundleId = bundleId;
   } else if (planType === "agent") {
-    const { agentSlugs } = body as { agentSlugs: string[] };
-    if (!agentSlugs?.length) {
+    const { agentSlugs: rawSlugs } = body as { agentSlugs: string[] };
+    const agentSlugs = Array.isArray(rawSlugs) ? Array.from(new Set(rawSlugs.filter((s) => typeof s === "string"))) : [];
+    if (!agentSlugs.length) {
       return NextResponse.json({ error: "No agents selected" }, { status: 400 });
     }
     const { data: agents } = await admin.from("agents").select("slug, stripe_price_id").in("slug", agentSlugs);
@@ -45,7 +55,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Not seeded in Stripe yet: ${missing.join(", ")}` }, { status: 400 });
     }
     priceRefs = (agents ?? []).map((a) => a.stripe_price_id!);
-    metadata.agentSlugs = agentSlugs.join(",");
+    Object.assign(metadata, packList("agents", agentSlugs));
   } else {
     return NextResponse.json({ error: "Invalid planType" }, { status: 400 });
   }
