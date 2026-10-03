@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isAgentLive, LIVE_AGENT_SLUGS } from "@/lib/live-agents";
 
 function dollars(cents: number) {
-  return `$${(cents / 100).toLocaleString()}`;
+  return `$${(cents / 100).toLocaleString("en-US")}`;
 }
 
 export default async function HomePage() {
@@ -24,15 +24,15 @@ export default async function HomePage() {
           We built BrickOS because real estate operators were drowning in busywork.
         </h1>
         <p className="mt-6 text-lg md:text-xl leading-snug text-white/70 max-w-[560px]">
-          {TOTAL_AGENT_COUNT} agents that replace your entire team — from off-market sourcing to exit. Not another
-          CRM. An operating system that runs your portfolio while you sleep.
+          AI assistants and working tools for the busywork at every stage of a deal, from off-market sourcing to
+          exit. {LIVE_AGENT_SLUGS.size} are live today and the rest are in development.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
             href={user ? "/dashboard" : "/signup"}
             className="px-7 py-3.5 text-black font-bold font-mono text-xs tracking-widest bg-accent hover:brightness-110 transition"
           >
-            {user ? "GO TO DASHBOARD →" : "INSTALL IN 3 MINS →"}
+            {user ? "GO TO DASHBOARD →" : "GET STARTED →"}
           </Link>
           <Link
             href="#agents"
@@ -84,7 +84,7 @@ export default async function HomePage() {
           <div className="border border-white/10 p-8 bg-white/[0.02]">
             <h3 className="font-serif text-3xl">Pick only the agents you need.</h3>
             <div className="mt-6 text-5xl font-serif text-accent">{dollars(AGENT_MONTHLY_PRICE_CENTS)}</div>
-            <div className="font-mono text-xs opacity-60 mt-1">/ agent / mo • cancel anytime • 7-day trial</div>
+            <div className="font-mono text-xs opacity-60 mt-1">/ agent / mo • cancel anytime</div>
             <Link
               href="/pricing"
               className="mt-6 inline-flex px-6 py-3 font-mono text-xs tracking-widest border border-white/15 hover:border-accent hover:text-accent transition"
@@ -95,12 +95,12 @@ export default async function HomePage() {
           <div className="border p-8 border-accent bg-gradient-to-b from-accent/10 to-transparent">
             <h3 className="font-serif text-3xl">The Full BrickOS</h3>
             <div className="mt-6 text-5xl font-serif text-accent">{dollars(FULL_OS_MONTHLY_PRICE_CENTS)}</div>
-            <div className="font-mono text-xs opacity-60 mt-1">/ mo • all {TOTAL_AGENT_COUNT} agents</div>
+            <div className="font-mono text-xs opacity-60 mt-1">/ mo • all {TOTAL_AGENT_COUNT} agents, including new ones as they launch</div>
             <Link
               href="/pricing"
               className="mt-6 inline-flex px-6 py-3 font-mono text-xs tracking-widest text-black font-bold bg-accent hover:brightness-110 transition"
             >
-              INSTALL FULL OS →
+              GET FULL BRICKOS →
             </Link>
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { btnCls, Field, inputCls } from "./ui";
+import { btnCls, Field, formatDate, inputCls } from "./ui";
 
 const DEFAULT_TASKS = [
   "Schedule move-out inspection",
@@ -151,7 +151,7 @@ export function TurnoverCoordinator() {
                     {t.unit ? ` #${t.unit}` : ""}
                   </div>
                   <div className="font-mono text-[11px] text-white/50 mt-1">
-                    {t.move_out_date ? `Move-out ${new Date(`${t.move_out_date}T00:00:00`).toLocaleDateString()}` : ""}
+                    {t.move_out_date ? `Move-out ${formatDate(t.move_out_date)}` : ""}
                     {dueLabel ? ` · ${dueLabel}` : ""}
                   </div>
                 </div>

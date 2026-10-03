@@ -31,7 +31,7 @@ const RAW_BUNDLES: { id: string; title: string; description: string; agentTitles
   {
     id: "sourcing",
     title: "Off-Market Sourcing",
-    description: "County records → LLC → owner in 40s",
+    description: "Work county lists to find motivated sellers",
     agentTitles: [
       "County Scraper",
       "LLC Unmasker",
@@ -47,7 +47,7 @@ const RAW_BUNDLES: { id: string; title: string; description: string; agentTitles
   {
     id: "outreach",
     title: "Owner Outreach & Nurture",
-    description: "80% fail on follow-up. We don't.",
+    description: "Draft the messages. Never lose track of a lead.",
     agentTitles: [
       "Cold Call Script Gen",
       "SMS Sequencer",
@@ -62,7 +62,7 @@ const RAW_BUNDLES: { id: string; title: string; description: string; agentTitles
   {
     id: "underwriting",
     title: "Underwriting & Offer",
-    description: "Comps, rents, rehab in one click",
+    description: "Comps, rents, rehab, and offers in one place",
     agentTitles: [
       "Comp Cruncher",
       "Rent Estimator",
@@ -76,7 +76,7 @@ const RAW_BUNDLES: { id: string; title: string; description: string; agentTitles
   {
     id: "capital",
     title: "Investor Relations",
-    description: "LP reports in 72h, no spreadsheets",
+    description: "Capital calls, distributions, and investor updates",
     agentTitles: [
       "Capital Call Bot",
       "Distribution Calc",
@@ -90,7 +90,7 @@ const RAW_BUNDLES: { id: string; title: string; description: string; agentTitles
   {
     id: "acquisitions",
     title: "Acquisitions & Closing",
-    description: "From PSA to keys, zero slip",
+    description: "Every deadline from contract to closing",
     agentTitles: [
       "Title Sweeper",
       "Due Diligence List",
@@ -103,7 +103,7 @@ const RAW_BUNDLES: { id: string; title: string; description: string; agentTitles
   {
     id: "ops",
     title: "Property Operations",
-    description: "Lease renewals never missed again",
+    description: "Track leases, rent, and vacancies",
     agentTitles: [
       "Rent Roll Reconciler",
       "Lease Renewal Clock",
@@ -118,7 +118,7 @@ const RAW_BUNDLES: { id: string; title: string; description: string; agentTitles
   {
     id: "maintenance",
     title: "Maintenance & Compliance",
-    description: "No more 2am calls",
+    description: "Work orders and vendor dispatch",
     agentTitles: [
       "Work Order Router",
       "Vendor Dispatcher",
@@ -131,7 +131,7 @@ const RAW_BUNDLES: { id: string; title: string; description: string; agentTitles
   {
     id: "exit",
     title: "Exit & Data Room",
-    description: "12-section data room in 12 minutes",
+    description: "Valuation, data room, and sale timeline",
     agentTitles: [
       "Valuation Engine",
       "Data Room Builder",

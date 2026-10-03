@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CHECKLIST_TEMPLATES, addDays } from "@/lib/checklist-templates";
-import { btnCls, Field, inputCls } from "./ui";
+import { btnCls, Field, formatDate, inputCls } from "./ui";
 
 type Item = { id: string; title: string; done: boolean; due_date: string | null; sort_order: number };
 type Checklist = { id: string; label: string; key_date: string | null; checklist_items: Item[] };
@@ -11,10 +11,6 @@ type Checklist = { id: string; label: string; key_date: string | null; checklist
 function todayIso() {
   const d = new Date();
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-}
-
-function formatDate(iso: string) {
-  return new Date(`${iso}T00:00:00`).toLocaleDateString();
 }
 
 export function ChecklistAgent({ slug }: { slug: string }) {

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { addDays } from "@/lib/checklist-templates";
-import { btnCls, Field, inputCls } from "./ui";
+import { btnCls, Field, formatDate, inputCls } from "./ui";
 
 const STAGES = ["new", "contacted", "negotiating", "offer_sent", "under_contract", "dead"] as const;
 const INACTIVE = new Set(["under_contract", "dead"]);
@@ -171,7 +171,7 @@ export function FollowUpClock() {
                       }`}
                     >
                       {overdue ? "OVERDUE " : dueToday ? "DUE TODAY " : "NEXT "}
-                      {new Date(`${r.next_follow_up}T00:00:00`).toLocaleDateString()}
+                      {formatDate(r.next_follow_up)}
                     </span>
                   )}
                   <select value={r.stage} onChange={(e) => update(r.id, { stage: e.target.value })} className={`${inputCls} max-w-[150px]`}>

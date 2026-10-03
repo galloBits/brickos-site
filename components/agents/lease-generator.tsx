@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Field, inputCls } from "./ui";
+import { Field, formatDate, inputCls } from "./ui";
 
 export function LeaseGenerator() {
   const [landlord, setLandlord] = useState("");
@@ -21,11 +21,11 @@ export function LeaseGenerator() {
 
   const lease = `RESIDENTIAL LEASE AGREEMENT
 
-This Lease Agreement ("Lease") is made on ${new Date().toLocaleDateString()} between ${landlord || "[Landlord]"} ("Landlord") and ${tenant || "[Tenant]"} ("Tenant").
+This Lease Agreement ("Lease") is made on ${formatDate(new Date())} between ${landlord || "[Landlord]"} ("Landlord") and ${tenant || "[Tenant]"} ("Tenant").
 
 1. PREMISES. Landlord leases to Tenant the residential property located at ${address || "[Property Address]"} (the "Premises").
 
-2. TERM. The lease term begins on ${start || "[Start Date]"} and ends on ${end || "[End Date]"}, unless renewed or terminated as provided in this Lease.
+2. TERM. The lease term begins on ${start ? formatDate(start) : "[Start Date]"} and ends on ${end ? formatDate(end) : "[End Date]"}, unless renewed or terminated as provided in this Lease.
 
 3. RENT. Tenant shall pay $${rent || "[Amount]"} per month, due on day ${dueDay || "[N]"} of each month, without demand or deduction.
 

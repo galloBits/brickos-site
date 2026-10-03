@@ -4,7 +4,7 @@ import { useState } from "react";
 import { BUNDLES, AGENTS, AGENT_MONTHLY_PRICE_CENTS, FULL_OS_MONTHLY_PRICE_CENTS } from "@/lib/catalog";
 
 function dollars(cents: number) {
-  return `$${(cents / 100).toLocaleString()}`;
+  return `$${(cents / 100).toLocaleString("en-US")}`;
 }
 
 export default function PricingPage() {
@@ -38,7 +38,7 @@ export default function PricingPage() {
     <main className="mx-auto max-w-[1280px] px-6 md:px-10 py-16">
       <h1 className="font-serif text-4xl mb-2">Choose your stack</h1>
       <p className="text-white/60 mb-10">
-        Pick individual agents at {dollars(AGENT_MONTHLY_PRICE_CENTS)}/mo each, grab a bundle, or install the full OS.
+        Pick individual agents at {dollars(AGENT_MONTHLY_PRICE_CENTS)}/mo each, grab a bundle, or get the full OS.
       </p>
 
       <section className="mb-16 border border-accent p-8 bg-gradient-to-b from-accent/10 to-transparent">
@@ -49,7 +49,7 @@ export default function PricingPage() {
           onClick={() => checkout({ planType: "full" })}
           className="px-6 py-3 font-mono text-xs tracking-widest text-black font-bold bg-accent hover:brightness-110 transition disabled:opacity-50"
         >
-          INSTALL FULL OS →
+          GET FULL BRICKOS →
         </button>
       </section>
 

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { btnCls, Field, inputCls, money } from "./ui";
+import { btnCls, Field, formatDate, inputCls, money } from "./ui";
 
 type Lease = {
   id: string;
@@ -148,7 +148,7 @@ export function LeaseRenewalClock() {
                   {l.tenant_name} <span className="font-normal text-white/50">— {l.property_label}{l.unit ? ` #${l.unit}` : ""}</span>
                 </div>
                 <div className="font-mono text-[11px] text-white/50 mt-1">
-                  Ends {new Date(`${l.lease_end}T00:00:00`).toLocaleDateString()}
+                  Ends {formatDate(l.lease_end)}
                   {l.monthly_rent ? ` · ${money(l.monthly_rent)}/mo` : ""}
                   {l.tenant_email ? ` · ${l.tenant_email}` : ""}
                 </div>

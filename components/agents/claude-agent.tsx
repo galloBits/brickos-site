@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import type { ClaudeAgentClientProps } from "@/lib/claude-agents";
+import { streamPost } from "@/lib/stream-client";
+import { Markdown } from "./markdown";
 import { btnCls, Field, inputCls } from "./ui";
 
 export function ClaudeAgent({ slug, intro, button, resultTitle, fields }: ClaudeAgentClientProps & { slug: string }) {
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(fields.map((f) => [f.key, f.type === "select" && f.required ? (f.options?.[0] ?? "") : ""])),
   );
-  const [output, setOutput] = useState<string | null>(null);
+  const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -18,16 +20,9 @@ export function ClaudeAgent({ slug, intro, button, resultTitle, fields }: Claude
   async function run() {
     setLoading(true);
     setError(null);
-    setOutput(null);
+    setOutput("");
     try {
-      const res = await fetch("/api/agents/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, values }),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Request failed");
-      setOutput(body.output);
+      await streamPost("/api/agents/generate", { slug, values }, setOutput);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
@@ -90,15 +85,17 @@ export function ClaudeAgent({ slug, intro, button, resultTitle, fields }: Claude
 
       {error && <p className="text-red-400 text-sm">{error}</p>}
 
-      {output && (
+      {(output || loading) && (
         <div className="border border-accent/30 bg-accent/5 p-6">
           <div className="flex items-center justify-between mb-3">
             <span className="font-mono text-[10px] tracking-widest opacity-60">{resultTitle}</span>
-            <button onClick={copy} className="font-mono text-[11px] text-accent hover:underline">
-              {copied ? "Copied ✓" : "Copy"}
-            </button>
+            {output && !loading && (
+              <button onClick={copy} className="font-mono text-[11px] text-accent hover:underline">
+                {copied ? "Copied ✓" : "Copy"}
+              </button>
+            )}
           </div>
-          <div className="text-sm leading-relaxed whitespace-pre-wrap text-white/90">{output}</div>
+          {output ? <Markdown>{output}</Markdown> : <p className="text-sm text-white/50">Thinking…</p>}
         </div>
       )}
     </div>

@@ -13,7 +13,7 @@ function daysFromToday(iso: string) {
 }
 
 function fmt(iso: string) {
-  return new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "short", day: "numeric" });
+  return new Date(`${iso}T00:00:00`).toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" });
 }
 
 export function Exchange1031() {

@@ -51,7 +51,7 @@ export function followUpEmail(step: "day1" | "day3" | "day7" | "day14") {
     },
     day3: {
       subject: "Have you run your first agent yet?",
-      html: "<p>Most operators install their first agent within 3 minutes. Need a hand picking one?</p>",
+      html: "<p>Most operators try their first agent within a few minutes. Need a hand picking one?</p>",
     },
     day7: {
       subject: "One week in — how's BrickOS working for you?",

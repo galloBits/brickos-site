@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { streamPost } from "@/lib/stream-client";
+import { Markdown } from "./markdown";
 import { btnCls, Field, inputCls } from "./ui";
 
 export function MarketSurveyor() {
@@ -8,23 +10,16 @@ export function MarketSurveyor() {
   const [propertyType, setPropertyType] = useState("");
   const [data, setData] = useState("");
   const [question, setQuestion] = useState("");
-  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function run() {
     setLoading(true);
     setError(null);
-    setAnalysis(null);
+    setAnalysis("");
     try {
-      const res = await fetch("/api/agents/market-survey", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ market, propertyType, data, question }),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Survey failed");
-      setAnalysis(body.analysis);
+      await streamPost("/api/agents/market-survey", { market, propertyType, data, question }, setAnalysis);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
@@ -60,10 +55,10 @@ export function MarketSurveyor() {
       </button>
 
       {error && <p className="text-red-400 text-sm">{error}</p>}
-      {analysis && (
+      {(analysis || loading) && (
         <div className="border border-accent/30 bg-accent/5 p-6">
           <div className="font-mono text-[10px] tracking-widest opacity-60 mb-3">MARKET SURVEY BRIEF</div>
-          <div className="text-sm leading-relaxed whitespace-pre-wrap text-white/90">{analysis}</div>
+          {analysis ? <Markdown>{analysis}</Markdown> : <p className="text-sm text-white/50">Thinking…</p>}
         </div>
       )}
     </div>

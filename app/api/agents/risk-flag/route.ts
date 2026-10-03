@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getEntitlement } from "@/lib/entitlement";
-import { runAgentPrompt } from "@/lib/anthropic";
+import { streamAgentResponse } from "@/lib/anthropic";
 
 export const maxDuration = 120;
 
@@ -15,12 +15,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "dealNotes is required (max 4000 chars)" }, { status: 400 });
   }
 
-  const result = await runAgentPrompt({
+  return streamAgentResponse({
+    effort: "medium",
     system:
       "You are a real estate acquisitions risk analyst. Given free-text deal notes from an investor, list the concrete red flags and open questions they should investigate before making an offer. Be specific and concise — a numbered list, no preamble. If the notes are too sparse to say anything specific, say what additional information you'd need.",
     user: dealNotes,
   });
-
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 502 });
-  return NextResponse.json({ analysis: result.text });
 }

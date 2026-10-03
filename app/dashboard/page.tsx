@@ -50,7 +50,7 @@ export default async function DashboardPage() {
               <div className="mt-2 text-sm">Status: {s.status}</div>
               {s.current_period_end && (
                 <div className="mt-1 text-xs text-white/50">
-                  Renews {new Date(s.current_period_end).toLocaleDateString()}
+                  Renews {new Date(s.current_period_end).toLocaleDateString("en-US")}
                 </div>
               )}
             </div>

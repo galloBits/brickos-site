@@ -23,5 +23,16 @@ export function ResultBox({ children }: { children: ReactNode }) {
 }
 
 export function money(n: number, digits = 0) {
-  return `$${n.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+  return `$${n.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+}
+
+// US formats (MM/DD/YYYY) regardless of the visitor's browser locale.
+// Accepts a plain "YYYY-MM-DD" date or a full timestamp.
+export function formatDate(value: string | Date): string {
+  const d = typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T00:00:00`) : new Date(value);
+  return d.toLocaleDateString("en-US");
+}
+
+export function formatDateTime(value: string | Date): string {
+  return new Date(value).toLocaleString("en-US");
 }

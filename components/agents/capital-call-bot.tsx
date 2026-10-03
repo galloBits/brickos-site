@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { downloadCsv } from "@/lib/csv";
-import { Field, ghostBtnCls, inputCls, money } from "./ui";
+import { Field, formatDate, ghostBtnCls, inputCls, money } from "./ui";
 
 type Lp = { name: string; email: string; commitment: string; called: string };
 
@@ -44,7 +44,7 @@ ${entity || "[Entity]"} is issuing a capital call of ${money(call, 2)} in total$
 Your share, based on your commitment of ${money(r.commitment, 2)} (${(r.share * 100).toFixed(2)}% of total commitments), is ${money(r.due, 2)}.
 Remaining unfunded commitment after this call: ${money(r.unfunded - r.due, 2)}.
 
-Please fund by ${dueDate ? new Date(`${dueDate}T00:00:00`).toLocaleDateString() : "[due date]"} using the wire instructions previously provided to you.
+Please fund by ${dueDate ? formatDate(dueDate) : "[due date]"} using the wire instructions previously provided to you.
 
 IMPORTANT: We will never change wire instructions by email. Before sending funds, confirm the instructions by calling us at a phone number you already have on file.
 

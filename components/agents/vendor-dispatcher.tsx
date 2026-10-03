@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ghostBtnCls } from "./ui";
+import { formatDateTime, ghostBtnCls } from "./ui";
 import { PRIORITY_COLOR, VendorPanel, useMaintenanceData } from "./maintenance-shared";
 
 export function VendorDispatcher() {
@@ -66,7 +66,7 @@ export function VendorDispatcher() {
                 </div>
                 {o.dispatched_at && (
                   <div className="font-mono text-[10px] text-accent/80 mt-1">
-                    Dispatched {new Date(o.dispatched_at).toLocaleString()}
+                    Dispatched {formatDateTime(o.dispatched_at)}
                   </div>
                 )}
               </div>

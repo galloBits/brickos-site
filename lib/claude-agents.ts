@@ -43,7 +43,7 @@ export const CLAUDE_AGENTS: Record<string, ClaudeAgentConfig> = {
       "Paste the text of a probate filing (petition, letters of administration, notice to creditors) and get the key facts pulled into a structured summary. It reads only what you paste; it doesn't search court records.",
     button: "PARSE FILING →",
     resultTitle: "PROBATE SUMMARY",
-    effort: "medium",
+    effort: "low",
     fields: [
       { key: "filing", label: "FILING TEXT", type: "textarea", required: true, max: DOC, rows: 12 },
     ],
@@ -152,7 +152,7 @@ If the channel is text message, note that marketing texts require the recipient'
     intro: "Paste this period's numbers and notes; get a clean investor update written from them. It uses only the numbers you give it.",
     button: "WRITE REPORT →",
     resultTitle: "INVESTOR UPDATE",
-    effort: "medium",
+    effort: "low",
     fields: [
       { key: "name", label: "PROPERTY / FUND NAME", type: "text", required: true, max: SHORT },
       { key: "period", label: "REPORTING PERIOD", type: "text", required: true, max: SHORT, placeholder: "e.g. Q3 2026" },

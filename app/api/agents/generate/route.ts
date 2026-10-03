@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getEntitlement } from "@/lib/entitlement";
-import { runAgentPrompt } from "@/lib/anthropic";
+import { streamAgentResponse } from "@/lib/anthropic";
 import { CLAUDE_AGENTS } from "@/lib/claude-agents";
 
 export const maxDuration = 120;
@@ -42,7 +42,5 @@ export async function POST(request: Request) {
     values[field.key] = value;
   }
 
-  const result = await runAgentPrompt({ system: cfg.system, user: cfg.buildUser(values), effort: cfg.effort });
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 502 });
-  return NextResponse.json({ output: result.text });
+  return streamAgentResponse({ system: cfg.system, user: cfg.buildUser(values), effort: cfg.effort });
 }

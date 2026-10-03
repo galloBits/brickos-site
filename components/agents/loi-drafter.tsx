@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { formatDate } from "./ui";
 
 export function LoiDrafter() {
   const [buyer, setBuyer] = useState("");
@@ -14,7 +15,7 @@ export function LoiDrafter() {
 
   const letter = `LETTER OF INTENT
 
-Date: ${new Date().toLocaleDateString()}
+Date: ${formatDate(new Date())}
 
 Buyer: ${buyer || "[Buyer Name]"}
 Seller: ${seller || "[Seller Name]"}

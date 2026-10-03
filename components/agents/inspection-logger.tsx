@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { btnCls, Field, inputCls } from "./ui";
+import { btnCls, Field, formatDate, inputCls } from "./ui";
 
 const AREAS = [
   "Exterior / grounds",
@@ -166,9 +166,10 @@ export function InspectionLogger() {
           const poor = ins.items.filter((i) => i.condition === "Poor");
           return (
             <div key={ins.id} className="border border-white/10 bg-white/[0.02]">
+              <div className="flex items-stretch">
               <button
                 onClick={() => setOpen(open === ins.id ? null : ins.id)}
-                className="w-full flex flex-wrap items-center justify-between gap-3 p-4 text-left"
+                className="flex-1 flex flex-wrap items-center justify-between gap-3 p-4 text-left"
               >
                 <div>
                   <div className="text-sm font-bold">
@@ -177,7 +178,7 @@ export function InspectionLogger() {
                     <span className="font-normal text-white/50">— {ins.inspection_type}</span>
                   </div>
                   <div className="font-mono text-[11px] text-white/50 mt-1">
-                    {new Date(`${ins.inspected_on}T00:00:00`).toLocaleDateString()}
+                    {formatDate(ins.inspected_on)}
                     {ins.inspector ? ` · ${ins.inspector}` : ""}
                   </div>
                 </div>
@@ -185,6 +186,17 @@ export function InspectionLogger() {
                   {poor.length ? `${poor.length} POOR` : ins.overall_condition?.toUpperCase()}
                 </span>
               </button>
+              <button
+                onClick={() => {
+                  if (window.confirm(`Delete the ${ins.inspection_type} inspection for ${ins.property_label}? This can't be undone.`)) remove(ins.id);
+                }}
+                className="px-4 font-mono text-xs text-white/40 hover:text-red-400 border-l border-white/10"
+                aria-label="Delete inspection"
+                title="Delete inspection"
+              >
+                ✕
+              </button>
+              </div>
               {open === ins.id && (
                 <div className="border-t border-white/10 p-4 space-y-1">
                   {ins.items.map((it) => (
@@ -195,9 +207,6 @@ export function InspectionLogger() {
                     </div>
                   ))}
                   {ins.notes && <p className="text-xs text-white/60 pt-2">{ins.notes}</p>}
-                  <button onClick={() => remove(ins.id)} className="font-mono text-[11px] text-white/40 hover:text-red-400 pt-3">
-                    Delete inspection
-                  </button>
                 </div>
               )}
             </div>
