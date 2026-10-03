@@ -85,3 +85,31 @@ npm run dev
 Needs `.env.local` populated per steps 1–3 to actually authenticate,
 checkout, or send email — without it the app still runs, but those
 features no-op or error at the point of use (never at build/boot time).
+
+## Stripe: test mode vs live mode (read before taking real payments)
+
+Test and live are separate worlds in Stripe: separate API keys, products,
+prices, webhooks, and customers. Everything below must point at the SAME mode
+or checkout silently breaks (a payment can succeed while the webhook that
+grants access never fires).
+
+Everything that must match, per mode:
+
+| What | Where |
+|---|---|
+| Secret key (`sk_test_…` / `sk_live_…`) | Vercel `STRIPE_SECRET_KEY` and `.env.local` |
+| Webhook endpoint + its signing secret (`whsec_…`) | Stripe dashboard (in that mode) → Vercel `STRIPE_WEBHOOK_SECRET` |
+| Full OS price id | `npm run stripe:setup` prints it → Vercel `STRIPE_PRICE_FULL_OS` |
+| Agent and bundle price ids | stored in Supabase by `npm run stripe:setup` |
+| Customer portal settings | Stripe dashboard → Settings → Billing → Customer portal (save in that mode) |
+
+To switch modes:
+1. Put that mode's secret key in `.env.local`.
+2. `npm run stripe:setup -- --dry-run` previews; then `npm run stripe:setup`
+   (add `-- --live` for a live key). It finds or creates that mode's prices
+   and re-points the database at them. Safe to re-run.
+3. Update the Vercel variables in the table above and redeploy.
+
+Safety valve: with a live key, `/api/checkout` returns 503 until Vercel has
+`STRIPE_LIVE_ENABLED=true`. Set it only after the live webhook exists and a
+live test purchase has been verified.
