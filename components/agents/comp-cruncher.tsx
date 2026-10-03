@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { HandoffLink } from "./handoff-link";
 
 type Comp = { address: string; price: string; sqft: string };
 
@@ -79,9 +80,16 @@ export function CompCruncher() {
         </div>
         <div className="mt-4 font-mono text-[11px] opacity-60">ESTIMATED VALUE</div>
         <div className="text-2xl font-serif">
-          ${estimatedValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          ${estimatedValue.toLocaleString("en-US", { maximumFractionDigits: 0 })}
         </div>
       </div>
+      {estimatedValue > 0 && (
+        <div className="flex flex-wrap gap-3">
+          <HandoffLink slug="mao-engine" params={{ arv: Math.round(estimatedValue) }}>
+            Use as ARV in MAO Engine
+          </HandoffLink>
+        </div>
+      )}
     </div>
   );
 }

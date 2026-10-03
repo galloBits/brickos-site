@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import { parseTable } from "@/lib/csv";
+import { SendLeadsButton, type Lead } from "./lead-actions";
 import { ghostBtnCls, inputCls } from "./ui";
 
 export type CsvField = { key: string; label: string; required?: boolean; aliases: string[] };
@@ -165,37 +166,92 @@ export function normalizeName(s: string): string {
     .trim();
 }
 
-export function ResultsTable({ headers, rows }: { headers: string[]; rows: (string | number)[][] }) {
+export function ResultsTable({
+  headers,
+  rows,
+  leads,
+}: {
+  headers: string[];
+  rows: (string | number)[][];
+  // Optional: one lead per row (same order). Shows checkboxes and an
+  // "add to Follow-Up Clock" action for the selected rows (or all shown).
+  leads?: Lead[];
+}) {
   const shown = rows.slice(0, 500);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
+  // A new result set invalidates old selections.
+  const resetKey = `${rows.length}|${shown[0]?.join("|") ?? ""}`;
+  const [lastKey, setLastKey] = useState(resetKey);
+  if (lastKey !== resetKey) {
+    setLastKey(resetKey);
+    setSelected(new Set());
+  }
+
+  const selectable = !!leads;
+  const chosen = leads ? (selected.size ? Array.from(selected).sort((a, b) => a - b).map((i) => leads[i]).filter(Boolean) : leads.slice(0, shown.length)) : [];
+
+  function toggle(i: number) {
+    setSelected((cur) => {
+      const next = new Set(cur);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }
+
   return (
-    <div className="border border-white/10 overflow-x-auto">
-      <table className="w-full font-mono text-[11px]">
-        <thead>
-          <tr className="text-left text-white/50 border-b border-white/10">
-            {headers.map((h) => (
-              <th key={h} className="p-2 whitespace-nowrap">
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {shown.map((r, i) => (
-            <tr key={i} className="border-b border-white/5">
-              {r.map((c, j) => (
-                <td key={j} className="p-2 whitespace-nowrap">
-                  {c}
-                </td>
+    <div className="space-y-3">
+      {selectable && (
+        <SendLeadsButton
+          leads={chosen}
+          label={selected.size ? `ADD ${selected.size} SELECTED TO FOLLOW-UP CLOCK` : `ADD ALL ${chosen.length} SHOWN TO FOLLOW-UP CLOCK`}
+        />
+      )}
+      <div className="border border-white/10 overflow-x-auto">
+        <table className="w-full font-mono text-[11px]">
+          <thead>
+            <tr className="text-left text-white/50 border-b border-white/10">
+              {selectable && (
+                <th className="p-2 w-8">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all shown"
+                    checked={selected.size === shown.length && shown.length > 0}
+                    onChange={(e) => setSelected(e.target.checked ? new Set(shown.map((_, i) => i)) : new Set())}
+                  />
+                </th>
+              )}
+              {headers.map((h) => (
+                <th key={h} className="p-2 whitespace-nowrap">
+                  {h}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {rows.length > shown.length && (
-        <div className="p-2 font-mono text-[11px] text-white/50">
-          Showing first {shown.length} of {rows.length.toLocaleString()} — export CSV for all.
-        </div>
-      )}
+          </thead>
+          <tbody>
+            {shown.map((r, i) => (
+              <tr key={i} className="border-b border-white/5">
+                {selectable && (
+                  <td className="p-2">
+                    <input type="checkbox" aria-label="Select row" checked={selected.has(i)} onChange={() => toggle(i)} />
+                  </td>
+                )}
+                {r.map((c, j) => (
+                  <td key={j} className="p-2 whitespace-nowrap">
+                    {c}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {rows.length > shown.length && (
+          <div className="p-2 font-mono text-[11px] text-white/50">
+            Showing first {shown.length} of {rows.length.toLocaleString()} — export CSV for all.
+          </div>
+        )}
+      </div>
     </div>
   );
 }

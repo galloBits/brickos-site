@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import type { HandoffSpec } from "@/lib/handoff";
+import { HandoffLink } from "./handoff-link";
+import { useHandoff } from "./use-handoff";
+
+const HANDOFF: HandoffSpec = { arv: { numeric: true }, repair: { numeric: true } };
 
 export function MaoEngine() {
-  const [arv, setArv] = useState("250000");
+  const handoff = useHandoff(HANDOFF);
+  const [arv, setArv] = useState(handoff.arv ?? "250000");
   const [arvMultiplier, setArvMultiplier] = useState("70");
-  const [repairCost, setRepairCost] = useState("35000");
+  const [repairCost, setRepairCost] = useState(handoff.repair ?? "35000");
   const [closingCostPct, setClosingCostPct] = useState("3");
   const [holdingCosts, setHoldingCosts] = useState("4000");
   const [wholesaleFee, setWholesaleFee] = useState("10000");
@@ -50,12 +56,22 @@ export function MaoEngine() {
       <div className="border border-accent/30 bg-accent/5 p-6">
         <div className="font-mono text-[10px] tracking-widest opacity-60">MAX ALLOWABLE OFFER</div>
         <div className="mt-2 text-4xl font-serif text-accent">
-          ${mao.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          ${mao.toLocaleString("en-US", { maximumFractionDigits: 0 })}
         </div>
         <div className="mt-3 font-mono text-[11px] opacity-50">
           = (ARV × {arvMultiplier || 0}%) − repairs − closing costs − holding costs − fee
         </div>
       </div>
+      {mao > 0 && (
+        <div className="flex flex-wrap gap-3">
+          <HandoffLink slug="loi-drafter" params={{ offerPrice: Math.round(mao) }}>
+            Draft the LOI at this price
+          </HandoffLink>
+          <HandoffLink slug="offer-stack-builder" params={{ price: Math.round(mao) }}>
+            Compare offer structures
+          </HandoffLink>
+        </div>
+      )}
     </div>
   );
 }

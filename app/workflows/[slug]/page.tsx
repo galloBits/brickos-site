@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 import { AGENTS, getAgent, getBundleForAgent } from "@/lib/catalog";
 import { getEntitlement } from "@/lib/entitlement";
 import { isAgentLive } from "@/lib/live-agents";
@@ -37,6 +38,7 @@ import {
 import { ClaudeAgent } from "@/components/agents/claude-agent";
 import { ChecklistAgent } from "@/components/agents/checklist-agent";
 import { clientPropsFor } from "@/lib/claude-agents";
+import { sanitizeFieldValues } from "@/lib/handoff";
 import { CHECKLIST_TEMPLATES } from "@/lib/checklist-templates";
 
 const AGENT_TOOLS: Record<string, React.ComponentType> = {
@@ -86,8 +88,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function WorkflowPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function WorkflowPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { slug } = await params;
+  const query = await searchParams;
   const agent = getAgent(slug);
   if (!agent) notFound();
 
@@ -99,7 +108,7 @@ export default async function WorkflowPage({ params }: { params: Promise<{ slug:
   const tool = Custom ? (
     <Custom />
   ) : claudeProps ? (
-    <ClaudeAgent slug={agent.slug} {...claudeProps} />
+    <ClaudeAgent slug={agent.slug} {...claudeProps} initialValues={sanitizeFieldValues(claudeProps.fields, query)} />
   ) : CHECKLIST_TEMPLATES[agent.slug] ? (
     <ChecklistAgent slug={agent.slug} />
   ) : null;
@@ -112,7 +121,7 @@ export default async function WorkflowPage({ params }: { params: Promise<{ slug:
       <h1 className="font-serif text-4xl md:text-5xl mb-6">{agent.title}</h1>
 
       {entitled && live && tool ? (
-        tool
+        <Suspense>{tool}</Suspense>
       ) : entitled ? (
         <div className="border border-white/10 bg-white/[0.02] p-6">
           <p className="font-mono text-sm mb-2 text-white/70">🛠 In development</p>

@@ -73,6 +73,17 @@ export default function SignupPage() {
         >
           {loading ? "CREATING ACCOUNT…" : "CREATE ACCOUNT →"}
         </button>
+        <p className="text-xs text-white/50">
+          By creating an account you agree to our{" "}
+          <a href="/terms" className="text-accent underline">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="/privacy" className="text-accent underline">
+            Privacy Policy
+          </a>
+          .
+        </p>
       </form>
       <p className="mt-6 text-sm text-white/60">
         Already a member?{" "}

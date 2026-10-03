@@ -1,13 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import type { HandoffSpec } from "@/lib/handoff";
 import { formatDate } from "./ui";
+import { useHandoff } from "./use-handoff";
+
+const HANDOFF: HandoffSpec = { offerPrice: { numeric: true }, address: { max: 200 } };
 
 export function LoiDrafter() {
+  const handoff = useHandoff(HANDOFF);
   const [buyer, setBuyer] = useState("");
   const [seller, setSeller] = useState("");
-  const [address, setAddress] = useState("");
-  const [offerPrice, setOfferPrice] = useState("");
+  const [address, setAddress] = useState(handoff.address ?? "");
+  const [offerPrice, setOfferPrice] = useState(handoff.offerPrice ?? "");
   const [earnestMoney, setEarnestMoney] = useState("");
   const [closingDays, setClosingDays] = useState("30");
   const [contingencies, setContingencies] = useState("Inspection, clear title, financing");

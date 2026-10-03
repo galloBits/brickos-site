@@ -3,7 +3,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { addDays } from "@/lib/checklist-templates";
+import { HandoffLink } from "./handoff-link";
 import { btnCls, Field, formatDate, inputCls } from "./ui";
+
+// Which drafting agent fits a lead at each stage, with the form pre-filled.
+function draftLink(r: { lead_name: string; property_label: string | null; stage: string; notes: string | null }) {
+  const context = (r.notes ?? "").slice(0, 600);
+  if (r.stage === "negotiating" || r.stage === "offer_sent") {
+    return { slug: "offer-nurturer", label: "Draft offer follow-ups", params: { seller: r.lead_name, property: r.property_label, situation: context } };
+  }
+  if (r.stage === "dead") {
+    return { slug: "dead-lead-reviver", label: "Draft a re-engagement message", params: { lead: r.lead_name, property: r.property_label, history: context } };
+  }
+  return { slug: "cold-call-script-gen", label: "Draft a call script", params: { property: [r.property_label, context].filter(Boolean).join(" — ") } };
+}
 
 const STAGES = ["new", "contacted", "negotiating", "offer_sent", "under_contract", "dead"] as const;
 const INACTIVE = new Set(["under_contract", "dead"]);
@@ -186,6 +199,16 @@ export function FollowUpClock() {
                   </button>
                 </div>
               </div>
+              {r.stage !== "under_contract" && (() => {
+                const d = draftLink(r);
+                return (
+                  <div>
+                    <HandoffLink slug={d.slug} params={d.params}>
+                      {d.label}
+                    </HandoffLink>
+                  </div>
+                );
+              })()}
               {!inactive && (
                 <div className="flex gap-2">
                   <input

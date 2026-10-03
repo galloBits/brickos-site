@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AGENTS, getAgent } from "@/lib/catalog";
 import { isAgentLive } from "@/lib/live-agents";
+import { ManageBilling } from "@/components/manage-billing";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -14,9 +15,12 @@ export default async function DashboardPage() {
 
   const { data: subscriptions } = await supabase
     .from("subscriptions")
-    .select("id, plan_type, status, current_period_end, stripe_price_id")
+    .select("id, plan_type, status, current_period_end, cancel_at_period_end, stripe_price_id")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
+
+  const { data: profile } = await supabase.from("profiles").select("stripe_customer_id").eq("id", user.id).single();
+  const hasBilling = !!profile?.stripe_customer_id;
 
   const { data: subAgentRows } = await supabase
     .from("subscription_agents")
@@ -34,7 +38,10 @@ export default async function DashboardPage() {
       <p className="text-white/60 mb-10">{user.email}</p>
 
       <section className="mb-12">
-        <h2 className="font-mono text-xs tracking-widest opacity-60 mb-4">SUBSCRIPTIONS</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="font-mono text-xs tracking-widest opacity-60">SUBSCRIPTIONS</h2>
+          {hasBilling && <ManageBilling />}
+        </div>
         {!subscriptions?.length && (
           <div className="border border-white/10 p-6 bg-white/[0.02]">
             <p className="text-white/60 mb-4">You don't have any active agents yet.</p>
@@ -49,8 +56,8 @@ export default async function DashboardPage() {
               <div className="font-mono text-[10px] tracking-widest opacity-50">{s.plan_type.toUpperCase()}</div>
               <div className="mt-2 text-sm">Status: {s.status}</div>
               {s.current_period_end && (
-                <div className="mt-1 text-xs text-white/50">
-                  Renews {new Date(s.current_period_end).toLocaleDateString("en-US")}
+                <div className={`mt-1 text-xs ${s.cancel_at_period_end ? "text-orange-400" : "text-white/50"}`}>
+                  {s.cancel_at_period_end ? "Cancels" : "Renews"} {new Date(s.current_period_end).toLocaleDateString("en-US")}
                 </div>
               )}
             </div>

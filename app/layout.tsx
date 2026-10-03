@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { NavBar } from "@/components/nav-bar";
+import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
   title: "BrickOS — The Real Estate Operator OS",
@@ -13,6 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen antialiased">
         <NavBar />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );

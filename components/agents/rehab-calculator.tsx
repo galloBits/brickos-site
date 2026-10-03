@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { HandoffLink } from "./handoff-link";
 
 type LineItem = { name: string; cost: string };
 
@@ -74,17 +75,24 @@ export function RehabCalculator() {
       <div className="border border-accent/30 bg-accent/5 p-6 space-y-1">
         <div className="flex justify-between font-mono text-xs opacity-70">
           <span>Subtotal</span>
-          <span>${subtotal.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+          <span>${subtotal.toLocaleString("en-US", { maximumFractionDigits: 0 })}</span>
         </div>
         <div className="flex justify-between font-mono text-xs opacity-70">
           <span>Contingency ({contingencyPct || 0}%)</span>
-          <span>${contingency.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+          <span>${contingency.toLocaleString("en-US", { maximumFractionDigits: 0 })}</span>
         </div>
         <div className="flex justify-between text-2xl font-serif text-accent pt-2 mt-2 border-t border-accent/20">
           <span>Total rehab</span>
-          <span>${total.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+          <span>${total.toLocaleString("en-US", { maximumFractionDigits: 0 })}</span>
         </div>
       </div>
+      {total > 0 && (
+        <div className="flex flex-wrap gap-3">
+          <HandoffLink slug="mao-engine" params={{ repair: Math.round(total) }}>
+            Use as repair cost in MAO Engine
+          </HandoffLink>
+        </div>
+      )}
     </div>
   );
 }

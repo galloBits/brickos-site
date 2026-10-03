@@ -79,7 +79,7 @@ export function RentEstimator() {
         </div>
         <div className="mt-4 font-mono text-[11px] opacity-60">ESTIMATED MONTHLY RENT</div>
         <div className="text-2xl font-serif">
-          ${estimatedRent.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          ${estimatedRent.toLocaleString("en-US", { maximumFractionDigits: 0 })}
         </div>
       </div>
     </div>

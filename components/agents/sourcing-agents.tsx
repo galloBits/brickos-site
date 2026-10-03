@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { downloadCsv, toNumber } from "@/lib/csv";
 import { CsvWorkbench, normalizeAddress, normalizeName, ResultsTable, type CsvField } from "./csv-workbench";
+import { SendLeadsButton, type Lead } from "./lead-actions";
 import { ghostBtnCls, inputCls, money } from "./ui";
 
 const LIST_SOURCE_NOTE =
@@ -73,7 +74,15 @@ export function AbsenteeMapper() {
                 </button>
               </div>
             </div>
-            <ResultsTable headers={headers} rows={table} />
+            <ResultsTable
+              headers={headers}
+              rows={table}
+              leads={results.map(({ r, outOfState }): Lead => ({
+                name: r.owner,
+                property: r.property_address,
+                notes: `Absentee owner${outOfState ? " (out of state)" : ""}. Mails to ${[r.mailing_address, r.mailing_city, r.mailing_state].filter(Boolean).join(", ")}.`,
+              }))}
+            />
           </div>
         );
       }}
@@ -173,7 +182,15 @@ export function TaxDelinquentHunter() {
             <div className="font-mono text-xs">
               <span className="text-accent">{results.length.toLocaleString()}</span> of {rows.length.toLocaleString()} properties match
             </div>
-            <ResultsTable headers={headers} rows={table} />
+            <ResultsTable
+              headers={headers}
+              rows={table}
+              leads={results.map((x): Lead => ({
+                name: x.r.owner,
+                property: x.r.property_address,
+                notes: `Tax delinquent: ${money(x.owed)} owed${x.years ? `, ${x.years} yr${x.years === 1 ? "" : "s"} behind` : ""}${x.value ? `, assessed ${money(x.value)}` : ""}.`,
+              }))}
+            />
           </div>
         );
       }}
@@ -260,6 +277,13 @@ export function PortfolioStalker() {
             <div className="font-mono text-xs">
               <span className="text-accent">{results.length.toLocaleString()}</span> owners with {min}+ properties
             </div>
+            <SendLeadsButton
+              leads={results.map(([, g]): Lead => ({
+                name: Array.from(g.names)[0] ?? "Unknown owner",
+                property: `${g.properties[0]}${g.properties.length > 1 ? ` (+${g.properties.length - 1} more)` : ""}`,
+                notes: `Owns ${g.properties.length} properties: ${g.properties.slice(0, 6).join("; ")}${g.properties.length > 6 ? "; …" : ""}.`,
+              }))}
+            />
             <div className="space-y-1">
               {results.slice(0, 300).map(([key, g]) => (
                 <div key={key} className="border border-white/10 bg-white/[0.02]">
@@ -381,7 +405,15 @@ export function PreForeclosureRadar() {
             <p className="font-mono text-[11px] text-white/40">
               &quot;Value − balance&quot; is only a real equity estimate if your balance column is the full loan balance, not just the amount in arrears.
             </p>
-            <ResultsTable headers={headers} rows={table} />
+            <ResultsTable
+              headers={headers}
+              rows={table}
+              leads={results.map((x): Lead => ({
+                name: x.r.owner,
+                property: x.r.property_address,
+                notes: `Pre-foreclosure${x.r.filing_type ? ` (${x.r.filing_type})` : ""}${x.r.sale_date ? `, auction ${x.r.sale_date}` : ""}${x.amount ? `, balance ${money(x.amount)}` : ""}.`,
+              }))}
+            />
           </div>
         );
       }}
@@ -508,6 +540,13 @@ export function LlcUnmasker() {
               </div>
             )}
 
+            <SendLeadsButton
+              leads={list.map((e): Lead => ({
+                name: e.name,
+                property: `${e.properties[0]}${e.properties.length > 1 ? ` (+${e.properties.length - 1} more)` : ""}`,
+                notes: `${e.type}-owned (${e.properties.length} propert${e.properties.length === 1 ? "y" : "ies"}). Owner behind the entity not yet identified.`,
+              }))}
+            />
             <div className="border border-white/10 overflow-x-auto">
               <table className="w-full font-mono text-[11px]">
                 <thead>

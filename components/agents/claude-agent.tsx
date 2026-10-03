@@ -6,9 +6,18 @@ import { streamPost } from "@/lib/stream-client";
 import { Markdown } from "./markdown";
 import { btnCls, Field, inputCls } from "./ui";
 
-export function ClaudeAgent({ slug, intro, button, resultTitle, fields }: ClaudeAgentClientProps & { slug: string }) {
+export function ClaudeAgent({
+  slug,
+  intro,
+  button,
+  resultTitle,
+  fields,
+  initialValues,
+}: ClaudeAgentClientProps & { slug: string; initialValues?: Record<string, string> }) {
   const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(fields.map((f) => [f.key, f.type === "select" && f.required ? (f.options?.[0] ?? "") : ""])),
+    Object.fromEntries(
+      fields.map((f) => [f.key, initialValues?.[f.key] ?? (f.type === "select" && f.required ? (f.options?.[0] ?? "") : "")]),
+    ),
   );
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);

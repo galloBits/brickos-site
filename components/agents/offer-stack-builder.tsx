@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import type { HandoffSpec } from "@/lib/handoff";
+import { useHandoff } from "./use-handoff";
+
+const HANDOFF: HandoffSpec = { price: { numeric: true } };
 
 type Structure = {
   name: string;
@@ -25,7 +29,10 @@ function monthlyPI(principal: number, ratePct: number, years: number) {
 }
 
 export function OfferStackBuilder() {
-  const [structures, setStructures] = useState<Structure[]>(DEFAULT_STRUCTURES);
+  const handoff = useHandoff(HANDOFF);
+  const [structures, setStructures] = useState<Structure[]>(() =>
+    handoff.price ? DEFAULT_STRUCTURES.map((s) => ({ ...s, price: handoff.price })) : DEFAULT_STRUCTURES,
+  );
 
   function update(i: number, field: keyof Structure, value: string) {
     setStructures((cur) => cur.map((s, idx) => (idx === i ? { ...s, [field]: value } : s)));
@@ -65,15 +72,15 @@ export function OfferStackBuilder() {
               <div className="pt-2 border-t border-white/10 font-mono text-[11px] space-y-1">
                 <div className="flex justify-between opacity-60">
                   <span>Down payment</span>
-                  <span>${down.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span>${down.toLocaleString("en-US", { maximumFractionDigits: 0 })}</span>
                 </div>
                 <div className="flex justify-between opacity-60">
                   <span>Financed</span>
-                  <span>${financed.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span>${financed.toLocaleString("en-US", { maximumFractionDigits: 0 })}</span>
                 </div>
                 <div className="flex justify-between text-accent text-sm pt-1">
                   <span>Est. P&I / mo</span>
-                  <span>${pi.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span>${pi.toLocaleString("en-US", { maximumFractionDigits: 0 })}</span>
                 </div>
               </div>
             </div>
