@@ -28,6 +28,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("Billing portal session failed", error);
+    if (error instanceof Stripe.errors.StripeInvalidRequestError && error.code === "resource_missing") {
+      return NextResponse.json(
+        { error: "We couldn't find your billing account. Email hello@thecoopdao.xyz and we'll sort it out." },
+        { status: 404 },
+      );
+    }
     if (error instanceof Stripe.errors.StripeInvalidRequestError && /configuration/i.test(error.message)) {
       return NextResponse.json(
         { error: "Self-service billing isn't set up yet. Email hello@thecoopdao.xyz and we'll take care of it." },
