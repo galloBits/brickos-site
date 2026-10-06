@@ -4,11 +4,11 @@ import { getStripe } from "@/lib/stripe";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { applySubscriptionEvent } from "@/lib/subscriptions";
 import { unpackList } from "@/lib/payments/metadata";
+import { billingPeriod } from "@/lib/stripe-period";
 import type { PlanType } from "@/lib/payments";
 
 export const runtime = "nodejs";
 
-const iso = (unixSeconds: number) => new Date(unixSeconds * 1000).toISOString();
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -50,8 +50,8 @@ export async function POST(request: Request) {
           userId,
           planType,
           status: subscription.status,
-          currentPeriodStart: iso(subscription.current_period_start),
-          currentPeriodEnd: iso(subscription.current_period_end),
+          currentPeriodStart: billingPeriod(subscription).start,
+          currentPeriodEnd: billingPeriod(subscription).end,
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
           entitledAgentSlugs: entitledSlugs,
         });
@@ -64,8 +64,8 @@ export async function POST(request: Request) {
           kind: "updated",
           providerSubscriptionId: subscription.id,
           status: subscription.status,
-          currentPeriodStart: iso(subscription.current_period_start),
-          currentPeriodEnd: iso(subscription.current_period_end),
+          currentPeriodStart: billingPeriod(subscription).start,
+          currentPeriodEnd: billingPeriod(subscription).end,
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
         });
         break;
