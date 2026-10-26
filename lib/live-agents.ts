@@ -62,3 +62,14 @@ export const LIVE_AGENT_SLUGS = new Set([
 export function isAgentLive(slug: string): boolean {
   return LIVE_AGENT_SLUGS.has(slug);
 }
+
+// Splits a list of agent slugs into the ones that work today and the ones that
+// are still catalog-only. Used to label bundles honestly on the pricing page
+// (so a buyer sees what's live before paying) and to block selling a
+// not-yet-built agent on its own.
+export function splitByLive(slugs: string[]): { live: string[]; comingSoon: string[] } {
+  const live: string[] = [];
+  const comingSoon: string[] = [];
+  for (const slug of slugs) (isAgentLive(slug) ? live : comingSoon).push(slug);
+  return { live, comingSoon };
+}

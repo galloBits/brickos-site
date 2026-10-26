@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import { BUNDLES, AGENTS, AGENT_MONTHLY_PRICE_CENTS, FULL_OS_MONTHLY_PRICE_CENTS } from "@/lib/catalog";
+import { isAgentLive, splitByLive } from "@/lib/live-agents";
 
 function dollars(cents: number) {
   return `$${(cents / 100).toLocaleString("en-US")}`;
 }
+
+const comingSoonCount = AGENTS.filter((a) => !isAgentLive(a.slug)).length;
 
 export default function PricingPage() {
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
@@ -44,6 +47,12 @@ export default function PricingPage() {
       <section className="mb-16 border border-accent p-8 bg-gradient-to-b from-accent/10 to-transparent">
         <h2 className="font-serif text-2xl mb-2">Full BrickOS</h2>
         <div className="text-4xl font-serif text-accent mb-4">{dollars(FULL_OS_MONTHLY_PRICE_CENTS)}/mo</div>
+        {comingSoonCount > 0 && (
+          <p className="font-mono text-[11px] text-white/50 mb-4">
+            {AGENTS.length - comingSoonCount} agents live now · {comingSoonCount} in active development, included free as
+            they ship.
+          </p>
+        )}
         <button
           disabled={loading}
           onClick={() => checkout({ planType: "full" })}
@@ -56,20 +65,32 @@ export default function PricingPage() {
       <section className="mb-16">
         <h2 className="font-mono text-xs tracking-widest opacity-60 mb-4">BUNDLES</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {BUNDLES.map((bundle) => (
-            <div key={bundle.id} id={bundle.id} className="border border-white/10 p-5 bg-white/[0.02] flex flex-col">
-              <h3 className="font-bold text-sm">{bundle.title}</h3>
-              <p className="font-mono text-[11px] text-accent/80 mt-1">{bundle.description}</p>
-              <div className="mt-4 font-serif text-2xl">{dollars(bundle.monthlyPriceCents)}/mo</div>
-              <button
-                disabled={loading}
-                onClick={() => checkout({ planType: "bundle", bundleId: bundle.id })}
-                className="mt-4 px-4 py-2 font-mono text-[11px] tracking-widest border border-white/15 hover:border-accent hover:text-accent transition disabled:opacity-50"
-              >
-                GET BUNDLE →
-              </button>
-            </div>
-          ))}
+          {BUNDLES.map((bundle) => {
+            const { live, comingSoon } = splitByLive(bundle.agents);
+            return (
+              <div key={bundle.id} id={bundle.id} className="border border-white/10 p-5 bg-white/[0.02] flex flex-col">
+                <h3 className="font-bold text-sm">{bundle.title}</h3>
+                <p className="font-mono text-[11px] text-accent/80 mt-1">{bundle.description}</p>
+                <div className="mt-4 font-serif text-2xl">{dollars(bundle.monthlyPriceCents)}/mo</div>
+                <p className="font-mono text-[10px] text-white/50 mt-2">
+                  {live.length} of {bundle.agents.length} live now
+                  {comingSoon.length > 0 && (
+                    <>
+                      {" · "}
+                      <span className="text-white/40">{comingSoon.length} coming soon</span>
+                    </>
+                  )}
+                </p>
+                <button
+                  disabled={loading}
+                  onClick={() => checkout({ planType: "bundle", bundleId: bundle.id })}
+                  className="mt-4 px-4 py-2 font-mono text-[11px] tracking-widest border border-white/15 hover:border-accent hover:text-accent transition disabled:opacity-50"
+                >
+                  GET BUNDLE →
+                </button>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -78,19 +99,36 @@ export default function PricingPage() {
           PICK INDIVIDUAL AGENTS ({selectedAgents.length} selected)
         </h2>
         <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-2 mb-6">
-          {AGENTS.map((agent) => (
-            <button
-              key={agent.slug}
-              onClick={() => toggleAgent(agent.slug)}
-              className={`text-left px-3 py-2.5 border font-mono text-[11px] transition ${
-                selectedAgents.includes(agent.slug)
-                  ? "border-accent bg-accent/10 text-accent"
-                  : "border-white/10 bg-black text-white/60 hover:border-white/20"
-              }`}
-            >
-              {agent.title}
-            </button>
-          ))}
+          {AGENTS.map((agent) => {
+            const live = isAgentLive(agent.slug);
+            if (!live) {
+              return (
+                <div
+                  key={agent.slug}
+                  title="In active development — not available to buy on its own yet."
+                  className="flex items-center justify-between gap-2 px-3 py-2.5 border border-white/5 bg-black/40 font-mono text-[11px] text-white/30 cursor-not-allowed"
+                >
+                  <span>{agent.title}</span>
+                  <span className="text-[9px] tracking-widest text-white/40 border border-white/10 px-1.5 py-0.5">
+                    SOON
+                  </span>
+                </div>
+              );
+            }
+            return (
+              <button
+                key={agent.slug}
+                onClick={() => toggleAgent(agent.slug)}
+                className={`text-left px-3 py-2.5 border font-mono text-[11px] transition ${
+                  selectedAgents.includes(agent.slug)
+                    ? "border-accent bg-accent/10 text-accent"
+                    : "border-white/10 bg-black text-white/60 hover:border-white/20"
+                }`}
+              >
+                {agent.title}
+              </button>
+            );
+          })}
         </div>
         <button
           disabled={loading || selectedAgents.length === 0}

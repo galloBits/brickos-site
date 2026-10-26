@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { getPaymentProvider, type PlanType } from "@/lib/payments";
 import { packList } from "@/lib/payments/metadata";
+import { isAgentLive } from "@/lib/live-agents";
 
 export async function POST(request: Request) {
   // Safety valve: with a live Stripe key, real cards are charged. Refuse to
@@ -48,6 +49,16 @@ export async function POST(request: Request) {
     const agentSlugs = Array.isArray(rawSlugs) ? Array.from(new Set(rawSlugs.filter((s) => typeof s === "string"))) : [];
     if (!agentSlugs.length) {
       return NextResponse.json({ error: "No agents selected" }, { status: 400 });
+    }
+    // An agent that isn't built yet can't be sold on its own — don't take money
+    // for something with no working page behind it. (Bundles are allowed to
+    // include coming-soon agents; the pricing page labels those.)
+    const notLive = agentSlugs.filter((s) => !isAgentLive(s));
+    if (notLive.length) {
+      return NextResponse.json(
+        { error: `These agents aren't available to buy yet: ${notLive.join(", ")}` },
+        { status: 400 },
+      );
     }
     const { data: agents } = await admin.from("agents").select("slug, stripe_price_id").in("slug", agentSlugs);
     const missing = agentSlugs.filter((s) => !agents?.find((a) => a.slug === s)?.stripe_price_id);
