@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { NavBar } from "@/components/nav-bar";
 import { SiteFooter } from "@/components/site-footer";
+import { VoiceAgent } from "@/components/voice-agent";
 
 export const metadata: Metadata = {
   title: "BrickOS — The Real Estate Operator OS",
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <NavBar />
         {children}
         <SiteFooter />
+        <VoiceAgent />
       </body>
     </html>
   );
