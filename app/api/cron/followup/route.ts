@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { sendEmail, followUpEmail } from "@/lib/email";
+import { unsubscribeUrl, siteUrl } from "@/lib/unsubscribe";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -25,14 +26,23 @@ export async function GET(request: Request) {
   const supabase = createServiceRoleClient();
   const now = Date.now();
 
-  const { data: profiles, error } = await supabase.from("profiles").select("id, email, created_at");
+  const { data: profiles, error } = await supabase
+    .from("profiles")
+    .select("id, email, full_name, created_at, marketing_unsubscribed");
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  const base = siteUrl();
   let sent = 0;
   for (const profile of profiles ?? []) {
+    // Respect opt-outs: the drip is marketing, so a user who unsubscribed
+    // should never get another step.
+    if (profile.marketing_unsubscribed) continue;
+
     const ageDays = (now - new Date(profile.created_at).getTime()) / (24 * 60 * 60 * 1000);
+    const firstName = profile.full_name?.trim().split(/\s+/)[0] || undefined;
+    const unsubUrl = unsubscribeUrl(profile.id);
 
     for (const { step, afterDays } of STEPS) {
       if (ageDays < afterDays) continue;
@@ -45,8 +55,20 @@ export async function GET(request: Request) {
         .maybeSingle();
       if (existing) continue;
 
-      const { subject, html } = followUpEmail(step);
-      const result = await sendEmail(profile.email, subject, html);
+      const { subject, html } = followUpEmail(step, {
+        firstName,
+        dashboardUrl: `${base}/dashboard`,
+        pricingUrl: `${base}/pricing`,
+        unsubscribeUrl: unsubUrl,
+      });
+      // One-click unsubscribe (RFC 8058): Gmail/Apple Mail show a native
+      // "Unsubscribe" control and POST to this URL.
+      const result = await sendEmail(profile.email, subject, html, {
+        headers: {
+          "List-Unsubscribe": `<${unsubUrl}>`,
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        },
+      });
       if (!result.ok) continue;
       await supabase.from("follow_up_log").insert({ user_id: profile.id, step });
       sent++;
